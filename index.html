@@ -1,0 +1,1361 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IELTS Reading Center - 10 Volumes</title>
+    <style>
+        /* CSS Chung cho Dashboard */
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f6fa;
+            color: #2f3542;
+        }
+
+        #dashboard-view {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        header h1 {
+            color: #6c5ce7;
+            margin-bottom: 10px;
+        }
+
+        .user-config-card {
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-config-card input {
+            padding: 12px 20px;
+            border: 1px solid #ced6e0;
+            border-radius: 8px;
+            width: 300px;
+            font-size: 16px;
+            outline: none;
+            text-align: center;
+        }
+
+        .volume-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 20px;
+        }
+
+        .volume-card {
+            background: #ffffff;
+            border-radius: 12px;
+            border: 1px solid #e1e8ed;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
+            transition: 0.3s;
+        }
+
+        .volume-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+        }
+
+        .volume-title {
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #6c5ce7;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #f1f2f6;
+            padding-bottom: 8px;
+        }
+
+        .test-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .test-btn {
+            background: #f1f2f6;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: left;
+            font-weight: 600;
+            font-size: 13px;
+            transition: 0.2s;
+            color: #57606f;
+            border-left: 4px solid #ced6e0;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .test-btn:hover {
+            background: #e8e8f8;
+            border-left-color: #6c5ce7;
+        }
+
+        /* Giao diện trạng thái đã làm xong */
+        .test-btn.completed {
+            background: #ebfbeb;
+            border-left-color: #2ecc71;
+            color: #27ae60;
+        }
+
+        .test-btn.completed .test-score {
+            font-size: 11px;
+            color: #2196f3;
+            font-weight: bold;
+        }
+
+        /* Định dạng hiệu ứng của Highlight */
+        span[data-ielts-highlight="true"] {
+            position: relative !important;
+        }
+
+        span[data-ielts-highlight="true"][data-note]:hover::after {
+            content: "Ghi chú: " attr(data-note) !important;
+            position: absolute !important;
+            bottom: 125% !important;
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            background-color: #2d3436 !important;
+            color: #ffffff !important;
+            padding: 8px 12px !important;
+            border-radius: 6px !important;
+            font-size: 13px !important;
+            font-family: sans-serif !important;
+            white-space: pre-wrap !important;
+            max-width: 250px !important;
+            width: max-content !important;
+            z-index: 100000 !important;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
+            pointer-events: none !important;
+            line-height: 1.4 !important;
+        }
+
+        span[data-ielts-highlight="true"][data-note]:hover::before {
+            content: "" !important;
+            position: absolute !important;
+            bottom: 115% !important;
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            border-width: 6px !important;
+            border-style: solid !important;
+            border-color: #2d3436 transparent transparent transparent !important;
+            z-index: 100000 !important;
+            pointer-events: none !important;
+        }
+
+        /* Định dạng số thứ tự câu hỏi (Badge) */
+        .question-badge {
+            display: inline-block !important;
+            width: 26px !important;
+            height: 26px !important;
+            line-height: 26px !important;
+            text-align: center !important;
+            border-radius: 50% !important;
+            font-size: 12px !important;
+            font-weight: bold !important;
+            margin-right: 4px !important;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+            cursor: pointer !important;
+            transition: 0.2s ease !important;
+            user-select: none;
+        }
+
+        .question-badge:hover {
+            transform: scale(1.15) !important;
+            filter: brightness(0.9) !important;
+        }
+
+        /* Tự động nhận diện màu sắc Badge theo từng Passage */
+        #passage-quiz-1 .question-badge {
+            background-color: #6c5ce7 !important;
+            color: #ffffff !important;
+        }
+
+        #passage-quiz-2 .question-badge {
+            background-color: #00cec9 !important;
+            color: #ffffff !important;
+        }
+
+        #passage-quiz-3 .question-badge {
+            background-color: #fab1a0 !important;
+            color: #2d3436 !important;
+        }
+
+        /* THIẾT LẬP NÚT TRÒN CHỌN ĐÁP ÁN (IELTS COMPUTER-DELIVERED STYLE) */
+        .option-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 12px;
+            margin-bottom: 22px;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: background-color 0.2s ease;
+            cursor: pointer;
+        }
+
+        .option-item:hover {
+            background-color: #f1f2f6;
+        }
+
+        .option-radio {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2px solid #a29bfe;
+            border-radius: 50%;
+            margin-top: 2px;
+            position: relative;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+
+        /* Trạng thái được chọn */
+        .option-item.selected .option-radio {
+            border-color: #6c5ce7;
+            background-color: #6c5ce7;
+        }
+
+        .option-item.selected .option-radio::after {
+            content: "";
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            width: 8px;
+            height: 8px;
+            background-color: #ffffff;
+            border-radius: 50%;
+        }
+
+        /* Văn bản tùy chọn */
+        .option-text {
+            font-size: 14px;
+            color: #2f3542;
+            line-height: 1.4;
+            cursor: text;
+        }
+
+        /* ĐỊNH DẠNG MÀU SẮC CHẾ ĐỘ XEM LẠI (REVIEW MODE) */
+        .option-item.review-correct .option-radio {
+            border-color: #28a745 !important;
+            background-color: #28a745 !important;
+        }
+
+        .option-item.review-correct .option-radio::after {
+            content: "";
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            width: 8px;
+            height: 8px;
+            background-color: #ffffff;
+            border-radius: 50%;
+        }
+
+        .option-item.review-incorrect .option-radio {
+            border-color: #dc3545 !important;
+            background-color: #dc3545 !important;
+        }
+
+        .option-item.review-incorrect .option-radio::after {
+            content: "";
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            width: 8px;
+            height: 8px;
+            background-color: #ffffff;
+            border-radius: 50%;
+        }
+
+        .ans-input-review {
+            pointer-events: none !important;
+            font-weight: bold !important;
+        }
+
+        .ans-input-review.correct {
+            background-color: #d4edda !important;
+            color: #155724 !important;
+            border: 1.5px solid #28a745 !important;
+        }
+
+        .ans-input-review.incorrect {
+            background-color: #f8d7da !important;
+            color: #721c24 !important;
+            border: 1.5px solid #dc3545 !important;
+        }
+
+        .review-correct-helper {
+            display: inline-block;
+            margin-left: 8px;
+            font-size: 13px;
+            font-weight: bold;
+            color: #2f3542;
+            background-color: #ffeaa7;
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid #f1c40f;
+        }
+
+        /* CSS Giao diện Trang hiển thị Kết quả */
+        #result-view {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 20px;
+            display: none;
+        }
+
+        .result-card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .result-stats-container {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 25px;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .stat-box {
+            background: #f8f9fa;
+            padding: 20px 35px;
+            border-radius: 12px;
+            min-width: 140px;
+            border: 1px solid #e1e8ed;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #6c5ce7;
+            margin-top: 5px;
+        }
+
+        .stat-desc {
+            font-size: 13px;
+            color: #747d8c;
+            text-transform: uppercase;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+
+        .breakdown-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+            margin-bottom: 30px;
+        }
+
+        .breakdown-table th,
+        .breakdown-table td {
+            padding: 12px 18px;
+            text-align: left;
+            border-bottom: 1px solid #f1f2f6;
+        }
+
+        .breakdown-table th {
+            background: #6c5ce7;
+            color: #ffffff;
+            font-weight: bold;
+        }
+
+        .status-tag {
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        .status-tag.correct {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status-tag.incorrect {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .quiz-view-container {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ================= DASHBOARD VIEW ================= -->
+    <div id="dashboard-view">
+        <header>
+            <h1>IELTS Reading Online Practice</h1>
+            <p>Chọn đề thi của bạn trong số 10 Volumes có sẵn bên dưới để bắt đầu làm bài</p>
+        </header>
+
+        <div class="user-config-card">
+            <label for="student-name" style="font-weight: bold; font-size: 1.1rem;">Nhập tên của bạn để bắt đầu làm
+                bài:</label>
+            <input type="text" id="student-name" placeholder="Ví dụ: Nguyễn Văn A" required>
+        </div>
+
+        <div class="volume-container" id="volumes-grid">
+            <!-- Sẽ được tự động render bằng JavaScript -->
+        </div>
+    </div>
+
+
+    <!-- ================= POPUP TÙY CHỌN CHO BÀI THI ĐÃ HOÀN THÀNH ================= -->
+    <div id="modal-test-options"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(45, 52, 54, 0.5); backdrop-filter: blur(4px); z-index: 999999; justify-content: center; align-items: center;">
+        <div
+            style="background: #ffffff; padding: 25px; border-radius: 16px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); width: 380px; max-width: 90%; box-sizing: border-box; text-align: center;">
+            <h3 id="opt-modal-title"
+                style="margin-top: 0; margin-bottom: 10px; font-size: 1.3rem; color: #2d3436; font-weight: bold;">Lịch
+                sử bài làm</h3>
+            <p id="opt-modal-info" style="font-size: 14px; color: #57606f; margin-bottom: 25px; white-space: pre-line;">
+                Bạn đã hoàn thành bài thi này trước đó.</p>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <button id="btn-opt-review"
+                    style="padding: 12px; border: none; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer; background: #3498db; color: white;"
+                    type="button">Xem lại bài cũ (Review)</button>
+                <button id="btn-opt-redo"
+                    style="padding: 12px; border: none; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer; background: #e67e22; color: white;"
+                    type="button">Làm lại bài mới (Redo)</button>
+                <button
+                    style="padding: 10px; border: 1px solid #ced6e0; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer; background: #f1f2f6; color: #57606f;"
+                    type="button" onclick="closeIeltsModal('modal-test-options')">Hủy</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ================= TEST VIEW (Khung làm bài chính) ================= -->
+    <div id="test-view" class="quiz-view-container">
+
+        <!-- Modals ghi chú cấu hình -->
+        <div id="modal-note-config"
+            style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(45, 52, 54, 0.5); backdrop-filter: blur(4px); z-index: 999999; justify-content: center; align-items: center;">
+            <div
+                style="background: #ffffff; padding: 25px; border-radius: 16px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); width: 400px; max-width: 90%; box-sizing: border-box;">
+                <h3 style="margin-top: 0; margin-bottom: 15px; font-size: 1.2rem; color: #2d3436; font-weight: bold;">📝
+                    Ghi chú Highlight</h3>
+                <label style="display: block; margin-bottom: 8px; font-size: 14px; color: #57606f;">Nội dung ghi chú của
+                    bạn:</label>
+                <textarea id="input-custom-note"
+                    style="width: 100%; padding: 10px 12px; border: 1px solid #ced6e0; border-radius: 8px; font-size: 14px; margin-bottom: 20px; box-sizing: border-box; resize: vertical;"
+                    rows="4"></textarea>
+                <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                    <button
+                        style="padding: 10px 18px; border: none; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer; background: #f1f2f6; color: #57606f;"
+                        type="button" onclick="closeIeltsModal('modal-note-config')">Hủy</button>
+                    <button id="btn-save-note-config"
+                        style="padding: 10px 18px; border: none; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer; background: #6c5ce7; color: white;"
+                        type="button">Lưu lại</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Thanh bar trên cùng của bài thi -->
+        <div
+            style="max-width: 1400px; margin: 10px auto; display: flex; justify-content: space-between; align-items: flex-end; padding: 0 10px;">
+            <div style="display: flex; gap: 8px;">
+                <button id="btn-passage1"
+                    style="padding: 12px 25px; border: none; border-radius: 15px 15px 0 0; cursor: pointer; font-weight: bold; background-color: #6c5ce7; color: white; transition: 0.3s;"
+                    type="button">Passage 1</button>
+                <button id="btn-passage2"
+                    style="padding: 12px 25px; border: none; border-radius: 15px 15px 0 0; cursor: pointer; font-weight: bold; background-color: #e4e7eb; color: #2d3436; transition: 0.3s;"
+                    type="button">Passage 2</button>
+                <button id="btn-passage3"
+                    style="padding: 12px 25px; border: none; border-radius: 15px 15px 0 0; cursor: pointer; font-weight: bold; background-color: #e4e7eb; color: #2d3436; transition: 0.3s;"
+                    type="button">Passage 3</button>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                <button id="btn-exit-test"
+                    style="background: #e74c3c; color: white; border: none; padding: 10px 15px; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 14px;"
+                    type="button">Thoát bài</button>
+                <div id="ielts-timer-widget"
+                    style="background: #2ecc71; color: white; padding: 10px 25px; border-radius: 10px; font-weight: bold; font-size: 1.2rem; display: flex; align-items: center; gap: 10px;">
+                    ⏱️ Time Left: <span id="timer-display">60:00</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Khung hiển thị nội dung thi -->
+        <div id="ielts-quiz-container-wrapper"
+            style="max-width: 1400px; margin: 0 auto 20px auto; display: flex; background-color: #f8f9fa; padding: 25px; border-radius: 0 15px 15px 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); position: relative; height: 76vh; overflow: hidden; box-sizing: border-box;">
+
+            <!-- Context Menu cho Highlight -->
+            <div id="ielts-color-context-menu"
+                style="display: none; position: absolute; z-index: 99999; background: #ffffff; border: 1px solid #ced6e0; box-shadow: 0 4px 15px rgba(0,0,0,0.15); border-radius: 8px; padding: 6px; width: 160px; user-select: none;">
+                <div id="ctx-header-color"
+                    style="font-size: 11px; font-weight: bold; color: #747d8c; padding: 4px 8px; border-bottom: 1px solid #f1f2f6; margin-bottom: 4px;">
+                    CHOOSE COLOR</div>
+                <div class="menu-color-option"
+                    style="display: flex; align-items: center; gap: 10px; padding: 6px 8px; cursor: pointer; border-radius: 4px; font-size: 13px; font-weight: 500; color: #2d3436;"
+                    data-color="#fff200">Yellow</div>
+                <div class="menu-color-option"
+                    style="display: flex; align-items: center; gap: 10px; padding: 6px 8px; cursor: pointer; border-radius: 4px; font-size: 13px; font-weight: 500; color: #2d3436;"
+                    data-color="#a8e6cf">Light Green</div>
+                <div class="menu-color-option"
+                    style="display: flex; align-items: center; gap: 10px; padding: 6px 8px; cursor: pointer; border-radius: 4px; font-size: 13px; font-weight: 500; color: #2d3436;"
+                    data-color="#9ed6ff">Light Blue</div>
+                <div id="ctx-divider-note" style="border-top: 1px solid #f1f2f6; margin: 4px 0; display: none;"></div>
+                <div id="ctx-add-note"
+                    style="display: none; align-items: center; gap: 10px; padding: 6px 8px; cursor: pointer; border-radius: 4px; font-size: 13px; font-weight: 500; color: #2d3436;">
+                    📝 Add/Edit Note</div>
+                <div id="ctx-delete-note"
+                    style="display: none; align-items: center; gap: 10px; padding: 6px 8px; cursor: pointer; border-radius: 4px; font-size: 13px; font-weight: 500; color: #d63031;">
+                    🗑️ Delete Note</div>
+            </div>
+
+            <!-- Cột trái: Bài đọc -->
+            <div id="reading-column-container"
+                style="width: 58%; background: #ffffff; padding: 35px; border-radius: 15px; border: 1px solid #e1e8ed; overflow-y: auto; box-sizing: border-box;">
+                <div id="passage-content-container"></div>
+            </div>
+
+            <!-- Splitter -->
+            <div id="ielts-drag-splitter"
+                style="width: 8px; background: #e1e8ed; cursor: col-resize; margin: 0 5px; border-radius: 4px; display: flex; align-items: center; justify-content: center; user-select: none;">
+                <div style="width: 2px; height: 30px; background: #a29bfe; border-radius: 1px;">&nbsp;</div>
+            </div>
+
+            <!-- Cột phải: Câu hỏi -->
+            <div id="question-column"
+                style="width: 41%; background: #ffffff; padding: 25px; border-radius: 15px; border: 1px solid #e1e8ed; overflow-y: auto; box-sizing: border-box;">
+                <div id="question-content-container"></div>
+            </div>
+
+        </div>
+
+        <!-- Navigation Palette -->
+        <div
+            style="max-width: 1400px; margin: 20px auto; background: #ffffff; padding: 20px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); border: 1px solid #e1e8ed;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <strong style="color: #2f3542; font-size: 0.95rem;">Question Navigation Palette:</strong>
+                <button id="btn-submit-answers"
+                    style="background: #218c74; color: white; border: none; padding: 10px 25px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 15px;">NỘP
+                    BÀI (SUBMIT)</button>
+            </div>
+            <div id="nav-palette"
+                style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-start; margin-bottom: 5px;">
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- ================= RESULT VIEW (Trang hiển thị kết quả) ================= -->
+    <div id="result-view">
+        <div class="result-card">
+            <h2 style="color: #2f3542; margin-top: 0; font-size: 1.8rem; font-weight: bold;">Kết quả luyện tập chi tiết
+            </h2>
+            <p id="result-summary-name" style="font-size: 1.1rem; color: #57606f; margin-bottom: 5px;">Học viên: ...</p>
+            <p id="result-summary-test" style="font-size: 1rem; color: #747d8c; margin-bottom: 25px;">Bài thi: ...</p>
+
+            <div class="result-stats-container">
+                <div class="stat-box">
+                    <div class="stat-desc">Số câu đúng</div>
+                    <div id="result-stat-score" class="stat-value">0/40</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-desc">Tỷ lệ đúng</div>
+                    <div id="result-stat-percent" class="stat-value">0%</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-desc">Band điểm IELTS</div>
+                    <div id="result-stat-band" class="stat-value">0.0</div>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: center; gap: 15px; margin-top: 35px;">
+                <button id="btn-result-review"
+                    style="padding: 14px 30px; border: none; border-radius: 10px; font-weight: bold; font-size: 15px; cursor: pointer; background: #6c5ce7; color: white; transition: 0.2s;"
+                    type="button">Xem chi tiết bài làm (Review)</button>
+                <button id="btn-result-home"
+                    style="padding: 14px 30px; border: 1px solid #ced6e0; border-radius: 10px; font-weight: bold; font-size: 15px; cursor: pointer; background: #ffffff; color: #2f3542; transition: 0.2s;"
+                    type="button">Quay về trang chủ (Home)</button>
+            </div>
+        </div>
+
+        <h3 style="color: #2f3542; font-size: 1.3rem; font-weight: bold; margin-bottom: 15px;">Phân tích đáp án từng câu
+        </h3>
+        <table class="breakdown-table">
+            <thead>
+                <tr>
+                    <th style="width: 15%;">Câu</th>
+                    <th style="width: 35%;">Đáp án của bạn</th>
+                    <th style="width: 35%;">Đáp án đúng</th>
+                    <th style="width: 15%; text-align: center;">Trạng thái</th>
+                </tr>
+            </thead>
+            <tbody id="result-breakdown-rows">
+                <!-- Sẽ tự động render bằng JavaScript -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // ================= KHAI BÁO CẤU HÌNH & BIẾN TOÀN CỤC =================
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx8q3qbIxes79ZkVGZVpuP-hRXZ2VSAzK7amOjyElnVmlBWGn32j3fcBBeXE9EYoXsgIA/exec";
+
+        let currentVolume = null;
+        let currentTest = null;
+        let studentName = "";
+        let totalSeconds = 3600;
+        let countdownInterval = null;
+        let flaggedQuestions = {}; // Lưu trữ câu đánh dấu để làm sau
+        let currentHighlightColor = '#fff200';
+        let targetHighlightElement = null;
+        let isReviewMode = false;
+        let activeTestAnswers = {}; // Lưu trữ đáp án đúng
+
+        const questionMap = {
+            p1: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13],
+            p2: [14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26],
+            p3: [27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40]
+        };
+
+        function getCorrectAnswer(qNum) {
+            const key = `Q${qNum}`;
+            if (activeTestAnswers && activeTestAnswers[key]) {
+                return activeTestAnswers[key];
+            }
+            return "";
+        }
+
+        function calculateIeltsReadingBand(correctCount) {
+            if (correctCount >= 39) return 9.0;
+            if (correctCount >= 37) return 8.5;
+            if (correctCount >= 35) return 8.0;
+            if (correctCount >= 33) return 7.5;
+            if (correctCount >= 30) return 7.0;
+            if (correctCount >= 27) return 6.5;
+            if (correctCount >= 23) return 6.0;
+            if (correctCount >= 19) return 5.5;
+            if (correctCount >= 15) return 5.0;
+            if (correctCount >= 13) return 4.5;
+            if (correctCount >= 10) return 4.0;
+            if (correctCount >= 5) return 3.5;
+            if (correctCount >= 3) return 3.0;
+            return 2.5;
+        }
+
+        function getLocalDatabase() {
+            let db = localStorage.getItem('ielts_practice_db');
+            if (!db) {
+                return { studentName: "", testHistory: {} };
+            }
+            return JSON.parse(db);
+        }
+
+        function saveLocalDatabase(db) {
+            localStorage.setItem('ielts_practice_db', JSON.stringify(db));
+        }
+
+        function loadSavedStudentName() {
+            const db = getLocalDatabase();
+            if (db.studentName) {
+                document.getElementById('student-name').value = db.studentName;
+                studentName = db.studentName;
+            }
+        }
+
+        document.getElementById('student-name').addEventListener('input', function (e) {
+            const val = e.target.value.trim();
+            const db = getLocalDatabase();
+            db.studentName = val;
+            studentName = val;
+            saveLocalDatabase(db);
+        });
+
+        function initDashboard() {
+            const grid = document.getElementById('volumes-grid');
+            grid.innerHTML = '';
+            const db = getLocalDatabase();
+
+            for (let v = 1; v <= 10; v++) {
+                const card = document.createElement('div');
+                card.className = 'volume-card';
+                card.innerHTML = `<div class="volume-title">Volume ${v}</div>`;
+
+                const list = document.createElement('div');
+                list.className = 'test-list';
+                for (let t = 1; t <= 10; t++) {
+                    const btn = document.createElement('button');
+                    btn.className = 'test-btn';
+                    const testKey = `Vol_${v}_Test_${t}`;
+
+                    if (db.testHistory[testKey]) {
+                        const result = db.testHistory[testKey];
+                        btn.classList.add('completed');
+                        btn.innerHTML = `
+                            <span>Practice Test ${t} ✓</span>
+                            <span class="test-score">Score: ${result.score}/40 (Band ${result.band})</span>
+                        `;
+                    } else {
+                        btn.textContent = `Practice Test ${t}`;
+                    }
+
+                    btn.onclick = () => handleTestClick(v, t, testKey);
+                    list.appendChild(btn);
+                }
+                card.appendChild(list);
+                grid.appendChild(card);
+            }
+        }
+
+        function handleTestClick(vol, test, testKey) {
+            const nameInput = document.getElementById('student-name').value.trim();
+            if (!nameInput) {
+                alert("Vui lòng điền họ và tên trước khi thực hiện bài thi!");
+                document.getElementById('student-name').focus();
+                return;
+            }
+            studentName = nameInput;
+
+            const db = getLocalDatabase();
+            if (db.testHistory[testKey]) {
+                const res = db.testHistory[testKey];
+                document.getElementById('opt-modal-title').textContent = `Lịch sử: Volume ${vol} - Test ${test}`;
+                document.getElementById('opt-modal-info').textContent = `Học viên: ${db.studentName}\nKết quả: ${res.score}/40 (Band ${res.band})\nNộp lúc: ${new Date(res.submittedAt).toLocaleString()}`;
+
+                openIeltsModal('modal-test-options');
+
+                document.getElementById('btn-opt-review').onclick = () => {
+                    closeIeltsModal('modal-test-options');
+                    startTestProcess(vol, test, true);
+                };
+
+                document.getElementById('btn-opt-redo').onclick = () => {
+                    if (confirm("Làm lại bài mới sẽ giải phóng toàn bộ dữ liệu lịch sử thi cũ cục bộ. Bạn chắc chắn chứ?")) {
+                        closeIeltsModal('modal-test-options');
+                        startTestProcess(vol, test, false);
+                    }
+                };
+            } else {
+                startTestProcess(vol, test, false);
+            }
+        }
+
+        function startTestProcess(vol, test, reviewMode = false) {
+            currentVolume = vol;
+            currentTest = test;
+            isReviewMode = reviewMode;
+
+            document.getElementById('dashboard-view').style.display = 'none';
+            document.getElementById('result-view').style.display = 'none';
+            document.getElementById('test-view').style.display = 'block';
+
+            loadTestContent(vol, test);
+        }
+
+        function loadTestContent(vol, test) {
+            console.log(`Đang tải dữ liệu đề thi cho Volume ${vol} - Test ${test}...`);
+
+            const passageContainer = document.getElementById('passage-content-container');
+            const questionContainer = document.getElementById('question-content-container');
+
+            passageContainer.innerHTML = `<div style="text-align: center; padding: 40px; font-weight: bold; color: #747d8c;">🔄 Đang tải văn bản bài đọc...</div>`;
+            questionContainer.innerHTML = `<div style="text-align: center; padding: 40px; font-weight: bold; color: #747d8c;">🔄 Đang tải danh sách câu hỏi...</div>`;
+
+            const jsonPath = `data/vol_${vol}/test_${test}.json`;
+
+            fetch(jsonPath)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Đường dẫn dữ liệu không tồn tại: ${jsonPath}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    activeTestAnswers = data.answers || {};
+
+                    passageContainer.innerHTML = `
+                        <div id="passage-content-1" class="passage-block">${data.passages.p1}</div>
+                        <div id="passage-content-2" class="passage-block" style="display:none;">${data.passages.p2}</div>
+                        <div id="passage-content-3" class="passage-block" style="display:none;">${data.passages.p3}</div>
+                    `;
+
+                    questionContainer.innerHTML = `
+                        <div id="passage-quiz-1" class="quiz-block">${data.questions.q1}</div>
+                        <div id="passage-quiz-2" class="quiz-block" style="display:none;">${data.questions.q2}</div>
+                        <div id="passage-quiz-3" class="quiz-block" style="display:none;">${data.questions.q3}</div>
+                    `;
+
+                    flaggedQuestions = {};
+                    applySwitchPassage(1);
+
+                    const db = getLocalDatabase();
+                    const testKey = `Vol_${vol}_Test_${test}`;
+
+                    if (isReviewMode && db.testHistory[testKey]) {
+                        const savedResult = db.testHistory[testKey];
+
+                        if (savedResult.highlightsHTML) {
+                            passageContainer.innerHTML = savedResult.highlightsHTML;
+                        }
+
+                        flaggedQuestions = savedResult.flags || {};
+                        buildQuestionPalette();
+
+                        for (let i = 1; i <= 40; i++) {
+                            const inputEl = document.getElementById(`ans-${i}`);
+                            if (inputEl) {
+                                const userAns = savedResult.answers[`Q${i}`] || "";
+                                const correctAns = getCorrectAnswer(i);
+                                inputEl.value = userAns;
+
+                                if (inputEl.type === 'hidden') {
+                                    // Chế độ xem lại cho Clickable Multiple Choices
+                                    const group = document.querySelector(`.option-group[data-question='${i}']`);
+                                    if (group) {
+                                        group.querySelectorAll('.option-item').forEach(opt => {
+                                            const optVal = opt.getAttribute('data-value');
+                                            if (optVal === userAns) {
+                                                if (userAns.trim().toLowerCase() === correctAns.trim().toLowerCase()) {
+                                                    opt.classList.add('review-correct');
+                                                } else {
+                                                    opt.classList.add('review-incorrect');
+                                                }
+                                            }
+                                            if (optVal === correctAns && userAns.trim().toLowerCase() !== correctAns.trim().toLowerCase()) {
+                                                opt.classList.add('review-correct');
+                                                opt.style.borderStyle = 'dashed';
+                                            }
+                                        });
+                                    }
+                                } else {
+                                    // Đối với ô điền từ thường
+                                    inputEl.classList.add('ans-input-review');
+                                    if (userAns.trim().toLowerCase() === correctAns.trim().toLowerCase()) {
+                                        inputEl.classList.add('correct');
+                                    } else {
+                                        inputEl.classList.add('incorrect');
+                                        const helper = document.createElement('span');
+                                        helper.className = 'review-correct-helper';
+                                        helper.textContent = `Correct: ${correctAns}`;
+                                        inputEl.parentNode.appendChild(helper);
+                                    }
+                                }
+                            }
+                            if (flaggedQuestions[i]) {
+                                updateBadgeStyles(i);
+                            }
+                        }
+
+                        document.getElementById('btn-submit-answers').textContent = "THOÁT XEM LẠI";
+                        document.getElementById('btn-submit-answers').style.backgroundColor = "#7f8c8d";
+                        document.getElementById('ielts-timer-widget').style.backgroundColor = "#3498db";
+                        document.getElementById('timer-display').textContent = "REVIEW MODE";
+
+                    } else {
+                        buildQuestionPalette();
+                        totalSeconds = 3600;
+                        document.getElementById('btn-submit-answers').textContent = "NỘP BÀI (SUBMIT)";
+                        document.getElementById('btn-submit-answers').style.backgroundColor = "#218c74";
+                        document.getElementById('ielts-timer-widget').style.backgroundColor = "#2ecc71";
+                        startSmartIeltsTimer();
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    passageContainer.innerHTML = `<div style="padding: 20px; color: #e74c3c; font-weight: bold;">Lỗi kết nối: Không thể nạp dữ liệu. Vui lòng kiểm tra lại sự tồn tại của file ${jsonPath} trên Repo Github của bạn.</div>`;
+                    questionContainer.innerHTML = `<div style="padding: 20px; color: #e74c3c; font-weight: bold;">Không thể khởi tạo câu hỏi.</div>`;
+                });
+        }
+
+        function applySwitchPassage(num) {
+            document.querySelectorAll('.passage-block').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.quiz-block').forEach(el => el.style.display = 'none');
+
+            const pActive = document.getElementById('passage-content-' + num);
+            const qActive = document.getElementById('passage-quiz-' + num);
+            if (pActive) pActive.style.display = 'block';
+            if (qActive) qActive.style.display = 'block';
+
+            for (let i = 1; i <= 3; i++) {
+                const btn = document.getElementById('btn-passage' + i);
+                if (btn) {
+                    if (i === num) {
+                        btn.style.backgroundColor = '#6c5ce7';
+                        btn.style.color = 'white';
+                    } else {
+                        btn.style.backgroundColor = '#e4e7eb';
+                        btn.style.color = '#2d3436';
+                    }
+                }
+            }
+        }
+
+        function buildQuestionPalette() {
+            const palette = document.getElementById('nav-palette');
+            palette.innerHTML = '';
+            for (let i = 1; i <= 40; i++) {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.textContent = i;
+                btn.style = "width:34px; height:34px; border:1px solid #d1d8e0; border-radius:6px; background:#fff; cursor:pointer; font-size:12px; font-weight:600; display:inline-flex; align-items:center; justify-content:center; transition: 0.2s;";
+
+                if (i <= 13) btn.style.borderBottom = '3px solid #6c5ce7';
+                else if (i <= 26) btn.style.borderBottom = '3px solid #00cec9';
+                else btn.style.borderBottom = '3px solid #fab1a0';
+
+                if (flaggedQuestions[i]) {
+                    btn.style.backgroundColor = '#f1c40f';
+                    btn.style.color = '#2d3436';
+                    btn.style.borderColor = '#f39c12';
+                }
+
+                btn.onclick = () => jumpToQuestion(i);
+                palette.appendChild(btn);
+            }
+        }
+
+        function jumpToQuestion(qNum) {
+            let targetPassage = 1;
+            if (questionMap.p2.includes(qNum)) targetPassage = 2;
+            if (questionMap.p3.includes(qNum)) targetPassage = 3;
+            applySwitchPassage(targetPassage);
+
+            setTimeout(() => {
+                const inputEl = document.getElementById(`ans-${qNum}`);
+                if (inputEl) {
+                    inputEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    inputEl.focus();
+                }
+            }, 100);
+        }
+
+        function toggleQuestionFlag(qNum) {
+            if (isReviewMode) return;
+            if (flaggedQuestions[qNum]) {
+                delete flaggedQuestions[qNum];
+            } else {
+                flaggedQuestions[qNum] = true;
+            }
+            updateBadgeStyles(qNum);
+            updatePaletteStyles(qNum);
+        }
+
+        function updateBadgeStyles(qNum) {
+            const badges = document.querySelectorAll('.question-badge');
+            badges.forEach(b => {
+                const num = parseInt(b.textContent.trim(), 10);
+                if (num === qNum) {
+                    if (flaggedQuestions[qNum]) {
+                        b.style.setProperty('background-color', '#f1c40f', 'important');
+                        b.style.setProperty('color', '#2d3436', 'important');
+                        b.style.setProperty('box-shadow', '0 0 8px rgba(241, 196, 15, 0.8)', 'important');
+                    } else {
+                        b.style.removeProperty('background-color');
+                        b.style.removeProperty('color');
+                        b.style.removeProperty('box-shadow');
+                    }
+                }
+            });
+        }
+
+        // Cập nhật phong cách Palette
+        function updatePaletteStyles(qNum) {
+            const buttons = document.querySelectorAll('#nav-palette button');
+            const btn = buttons[qNum - 1];
+            if (btn) {
+                if (flaggedQuestions[qNum]) {
+                    btn.style.backgroundColor = '#f1c40f';
+                    btn.style.color = '#2d3436';
+                    btn.style.borderColor = '#f39c12';
+                } else {
+                    btn.style.backgroundColor = '#fff';
+                    btn.style.color = 'black';
+                    btn.style.borderColor = '#d1d8e0';
+                }
+            }
+        }
+
+        function startSmartIeltsTimer() {
+            if (countdownInterval) clearInterval(countdownInterval);
+            countdownInterval = setInterval(() => {
+                const minutes = Math.floor(totalSeconds / 60);
+                const seconds = totalSeconds % 60;
+                document.getElementById('timer-display').textContent =
+                    `${minutes < 10 ? '0' + minutes : minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+
+                if (totalSeconds <= 0) {
+                    clearInterval(countdownInterval);
+                    alert("Thời gian làm bài đã kết thúc! Hệ thống tiến hành nộp kết quả tự động.");
+                    submitStudentAnswers();
+                }
+                totalSeconds--;
+            }, 1000);
+        }
+
+        function openIeltsModal(id) { document.getElementById(id).style.display = 'flex'; }
+        function closeIeltsModal(id) { document.getElementById(id).style.display = 'none'; }
+
+        // ================= XỬ LÝ HIGHLIGHT & NOTE =================
+        const containerWrapper = document.getElementById('ielts-quiz-container-wrapper');
+        const ctxMenu = document.getElementById('ielts-color-context-menu');
+
+        containerWrapper.addEventListener('contextmenu', function (e) {
+            if (isReviewMode) return;
+            if (e.target.closest('input') || e.target.closest('select') || e.target.closest('button') || e.target.closest('.question-badge') || e.target.closest('.option-item')) return;
+            e.preventDefault();
+            let rect = containerWrapper.getBoundingClientRect();
+            ctxMenu.style.left = (e.clientX - rect.left) + 'px';
+            ctxMenu.style.top = (e.clientY - rect.top) + 'px';
+            ctxMenu.style.display = 'block';
+
+            const highlightSpan = e.target.closest('span[data-ielts-highlight="true"]');
+            if (highlightSpan) {
+                targetHighlightElement = highlightSpan;
+                document.getElementById('ctx-add-note').style.display = 'flex';
+                document.getElementById('ctx-delete-note').style.display = highlightSpan.hasAttribute('data-note') ? 'flex' : 'none';
+                document.getElementById('ctx-divider-note').style.display = 'block';
+            } else {
+                targetHighlightElement = null;
+                document.getElementById('ctx-add-note').style.display = 'none';
+                document.getElementById('ctx-delete-note').style.display = 'none';
+                document.getElementById('ctx-divider-note').style.display = 'none';
+            }
+        });
+
+        document.addEventListener('click', function (e) {
+            if (!e.target.closest('#ielts-color-context-menu')) {
+                ctxMenu.style.display = 'none';
+            }
+        });
+
+        ctxMenu.addEventListener('click', function (e) {
+            const option = e.target.closest('.menu-color-option');
+            if (option) {
+                currentHighlightColor = option.getAttribute('data-color');
+                ctxMenu.style.display = 'none';
+            }
+        });
+
+        containerWrapper.addEventListener('mouseup', function (e) {
+            if (isReviewMode) return;
+            if (e.button !== 0) return;
+            var selection = window.getSelection();
+            if (selection.isCollapsed || selection.toString().trim() === "") return;
+
+            var range = selection.getRangeAt(0);
+            if (range.startContainer === range.endContainer && range.startContainer.nodeType === Node.TEXT_NODE) {
+                var node = range.startContainer;
+                var text = node.nodeValue;
+                var beforeText = text.substring(0, range.startOffset);
+                var selectedText = text.substring(range.startOffset, range.endOffset);
+                var afterText = text.substring(range.endOffset);
+
+                var parent = node.parentNode;
+                var span = document.createElement('span');
+                span.style.backgroundColor = currentHighlightColor;
+                span.style.color = '#000';
+                span.style.cursor = 'pointer';
+                span.setAttribute('data-ielts-highlight', 'true');
+                span.textContent = selectedText;
+
+                if (beforeText) parent.insertBefore(document.createTextNode(beforeText), node);
+                parent.insertBefore(span, node);
+                if (afterText) parent.insertBefore(document.createTextNode(afterText), node);
+                parent.removeChild(node);
+                selection.removeAllRanges();
+            }
+        });
+
+        containerWrapper.addEventListener('dblclick', function (e) {
+            if (isReviewMode) return;
+            const target = e.target.closest('span[data-ielts-highlight="true"]');
+            if (target && !e.target.classList.contains('note-icon')) {
+                e.stopPropagation();
+                const parent = target.parentNode;
+                const textNodeContent = target.textContent.replace(' 📝', '');
+                target.replaceWith(document.createTextNode(textNodeContent));
+                if (parent) parent.normalize();
+            }
+        });
+
+        // Xử lý sự kiện nhấp chọn Clickable Multiple Choice và đánh dấu câu hỏi làm sau (Flag)
+        containerWrapper.addEventListener('click', function (e) {
+            const optionItem = e.target.closest('.option-item');
+            if (optionItem && !isReviewMode) {
+                const selection = window.getSelection().toString().trim();
+                // Không đổi đáp án nếu người dùng đang bôi đen chữ để highlight
+                if (selection !== "" && e.target.closest('.option-text')) {
+                    return;
+                }
+
+                const group = optionItem.closest('.option-group');
+                if (group) {
+                    const qNum = group.getAttribute('data-question');
+                    const hiddenInput = document.getElementById(`ans-${qNum}`);
+                    if (hiddenInput) {
+                        group.querySelectorAll('.option-item').forEach(opt => opt.classList.remove('selected'));
+                        optionItem.classList.add('selected');
+                        hiddenInput.value = optionItem.getAttribute('data-value');
+                    }
+                }
+                return;
+            }
+
+            const badge = e.target.closest('.question-badge');
+            if (badge) {
+                e.preventDefault();
+                e.stopPropagation();
+                const qNum = parseInt(badge.textContent.trim(), 10);
+                if (!isNaN(qNum)) {
+                    toggleQuestionFlag(qNum);
+                }
+            }
+        });
+
+        document.getElementById('ctx-add-note').onclick = () => {
+            if (!targetHighlightElement || isReviewMode) return;
+            document.getElementById('input-custom-note').value = targetHighlightElement.getAttribute('data-note') || '';
+            openIeltsModal('modal-note-config');
+        };
+
+        document.getElementById('btn-save-note-config').onclick = () => {
+            if (!targetHighlightElement || isReviewMode) return;
+            const note = document.getElementById('input-custom-note').value.trim();
+            if (note) {
+                targetHighlightElement.setAttribute('data-note', note);
+                if (!targetHighlightElement.querySelector('.note-icon')) {
+                    const icon = document.createElement('span');
+                    icon.className = 'note-icon';
+                    icon.textContent = ' 📝';
+                    targetHighlightElement.appendChild(icon);
+                }
+            }
+            closeIeltsModal('modal-note-config');
+        };
+
+        // ================= XỬ LÝ SUBMIT LÊN CLOUD (SHEETS & DRIVE) =================
+        document.getElementById('btn-submit-answers').onclick = () => {
+            if (isReviewMode) {
+                exitTestView();
+                return;
+            }
+
+            if (confirm("Xác nhận nộp bài thi hiện tại lên hệ thống lưu trữ?")) {
+                submitStudentAnswers();
+            }
+        };
+
+        function submitStudentAnswers() {
+            clearInterval(countdownInterval);
+
+            let studentResponses = {};
+            let correctAnswersCount = 0;
+
+            for (let i = 1; i <= 40; i++) {
+                const input = document.getElementById(`ans-${i}`);
+                const userAns = input ? input.value.trim() : "";
+                studentResponses[`Q${i}`] = userAns;
+
+                const correctAns = getCorrectAnswer(i);
+                if (userAns.toLowerCase() === correctAns.toLowerCase()) {
+                    correctAnswersCount++;
+                }
+            }
+
+            const calculatedBand = calculateIeltsReadingBand(correctAnswersCount);
+
+            const db = getLocalDatabase();
+            const testKey = `Vol_${currentVolume}_Test_${currentTest}`;
+
+            db.testHistory[testKey] = {
+                score: correctAnswersCount,
+                band: calculatedBand,
+                answers: studentResponses,
+                highlightsHTML: document.getElementById('passage-content-container').innerHTML,
+                flags: flaggedQuestions,
+                submittedAt: new Date().toISOString()
+            };
+            saveLocalDatabase(db);
+
+            const payload = {
+                name: studentName,
+                volume: `Volume ${currentVolume}`,
+                test: `Test ${currentTest}`,
+                score: `${correctAnswersCount}/40`,
+                band: `${calculatedBand}`,
+                answers: JSON.stringify(studentResponses),
+                submittedAt: new Date().toISOString(),
+                fullBackup: JSON.stringify(db)
+            };
+
+            const submitBtn = document.getElementById('btn-submit-answers');
+            submitBtn.disabled = true;
+            submitBtn.textContent = "Đang đồng bộ...";
+
+            fetch(WEB_APP_URL, {
+                method: "POST",
+                mode: "no-cors",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(payload)
+            })
+                .then(() => {
+                    // Sau khi đồng bộ thành công, chuyển sang hiển thị màn hình kết quả
+                    showResultView(correctAnswersCount, calculatedBand, studentResponses);
+                })
+                .catch(err => {
+                    console.error("Lỗi đồng bộ:", err);
+                    alert("Kết nối mạng gián đoạn, kết quả hiện tại tạm thời được lưu trữ cục bộ.");
+                    showResultView(correctAnswersCount, calculatedBand, studentResponses);
+                });
+        }
+
+        // Hàm xử lý hiển thị giao diện Kết quả thi
+        function showResultView(score, band, responses) {
+            document.getElementById('test-view').style.display = 'none';
+
+            // Điền thông tin tóm tắt
+            document.getElementById('result-summary-name').textContent = `Học viên: ${studentName}`;
+            document.getElementById('result-summary-test').textContent = `Bài thi: Volume ${currentVolume} - Test ${currentTest}`;
+            document.getElementById('result-stat-score').textContent = `${score}/40`;
+            document.getElementById('result-stat-percent').textContent = `${Math.round((score / 40) * 100)}%`;
+            document.getElementById('result-stat-band').textContent = band;
+
+            // Render bảng phân tích câu hỏi
+            const tbody = document.getElementById('result-breakdown-rows');
+            tbody.innerHTML = '';
+
+            for (let i = 1; i <= 40; i++) {
+                const userAns = responses[`Q${i}`] || "";
+                const correctAns = getCorrectAnswer(i);
+                const isCorrect = userAns.toLowerCase() === correctAns.toLowerCase();
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td style="font-weight: bold; font-size: 15px;">Câu ${i}</td>
+                    <td style="color: ${isCorrect ? '#2ecc71' : '#e74c3c'}; font-weight: 500;">${userAns || "(Để trống)"}</td>
+                    <td style="font-weight: 500; color: #2f3542;">${correctAns}</td>
+                    <td>
+                        <span class="status-tag ${isCorrect ? 'correct' : 'incorrect'}">
+                            ${isCorrect ? 'Đúng ✓' : 'Sai ✗'}
+                        </span>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            }
+
+            // Gán sự kiện điều hướng cho các nút trên màn hình kết quả
+            document.getElementById('btn-result-review').onclick = () => {
+                // Vào chế độ Xem lại bài làm
+                document.getElementById('result-view').style.display = 'none';
+                startTestProcess(currentVolume, currentTest, true);
+            };
+
+            document.getElementById('btn-result-home').onclick = () => {
+                // Trở về trang Dashboard chính
+                document.getElementById('result-view').style.display = 'none';
+                document.getElementById('dashboard-view').style.display = 'block';
+                initDashboard();
+            };
+
+            document.getElementById('result-view').style.display = 'block';
+        }
+
+        function exitTestView() {
+            clearInterval(countdownInterval);
+            isReviewMode = false;
+
+            const submitBtn = document.getElementById('btn-submit-answers');
+            submitBtn.disabled = false;
+            submitBtn.textContent = "NỘP BÀI (SUBMIT)";
+
+            document.getElementById('test-view').style.display = 'none';
+            document.getElementById('result-view').style.display = 'none';
+            document.getElementById('dashboard-view').style.display = 'block';
+
+            initDashboard();
+        }
+
+        document.getElementById('btn-exit-test').onclick = () => {
+            if (isReviewMode) {
+                exitTestView();
+            } else {
+                if (confirm("Bạn muốn dừng làm bài thi? Dữ liệu chưa nộp sẽ bị hủy bỏ.")) {
+                    exitTestView();
+                }
+            }
+        };
+
+        (function initPersistentSplitter() {
+            let isDragging = false;
+            window.addEventListener('mousedown', function (e) {
+                const splitter = document.getElementById('ielts-drag-splitter');
+                if (!splitter || !splitter.contains(e.target)) return;
+                isDragging = true;
+                document.body.style.cursor = 'col-resize';
+            });
+            window.addEventListener('mousemove', function (e) {
+                if (!isDragging) return;
+                const wrapper = document.getElementById('ielts-quiz-container-wrapper');
+                const leftCol = document.getElementById('reading-column-container');
+                const rightCol = document.getElementById('question-column');
+
+                let containerRect = wrapper.getBoundingClientRect();
+                let currentX = e.clientX - containerRect.left;
+                let leftPercent = (currentX / containerRect.width) * 100;
+                let rightPercent = 100 - leftPercent - 1;
+
+                if (leftPercent > 20 && leftPercent < 80) {
+                    leftCol.style.width = leftPercent + '%';
+                    rightCol.style.width = rightPercent + '%';
+                }
+            });
+            window.addEventListener('mouseup', function () {
+                if (isDragging) {
+                    isDragging = false;
+                    document.body.style.cursor = '';
+                }
+            });
+        })();
+
+        document.getElementById('btn-passage1').onclick = () => applySwitchPassage(1);
+        document.getElementById('btn-passage2').onclick = () => applySwitchPassage(2);
+        document.getElementById('btn-passage3').onclick = () => applySwitchPassage(3);
+
+        loadSavedStudentName();
+        initDashboard();
+    </script>
+</body>
+
+</html>
