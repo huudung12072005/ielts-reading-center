@@ -1127,6 +1127,19 @@
             return "";
         }
 
+        // Hàm helper kiểm tra đáp án nhập vào có khớp với đáp án đúng không (hỗ trợ dấu gạch chéo '/')
+        function checkUserAnswerCorrect(userAns, correctAns) {
+            const userAnsLower = userAns.trim().toLowerCase();
+            const correctAnsLower = correctAns.trim().toLowerCase();
+            if (!correctAnsLower) return false;
+            
+            if (correctAnsLower.includes('/')) {
+                const parts = correctAnsLower.split('/');
+                return parts.some(p => p.trim() === userAnsLower);
+            }
+            return userAnsLower === correctAnsLower;
+        }
+
         function calculateIeltsReadingBand(correctCount) {
             if (correctCount >= 39) return 9.0;
             if (correctCount >= 37) return 8.5;
@@ -1323,6 +1336,9 @@
                         if (savedResult.highlightsHTML) {
                             passageContainer.innerHTML = savedResult.highlightsHTML;
                         }
+                        if (savedResult.questionsHTML) {
+                            questionContainer.innerHTML = savedResult.questionsHTML;
+                        }
 
                         flaggedQuestions = savedResult.flags || {};
                         buildQuestionPalette();
@@ -1356,7 +1372,7 @@
                                 } else {
                                     // Đối với ô điền từ thường
                                     inputEl.classList.add('ans-input-review');
-                                    if (userAns.trim().toLowerCase() === correctAns.trim().toLowerCase()) {
+                                    if (checkUserAnswerCorrect(userAns, correctAns)) {
                                         inputEl.classList.add('correct');
                                     } else {
                                         inputEl.classList.add('incorrect');
@@ -1366,7 +1382,6 @@
                                         inputEl.parentNode.appendChild(helper);
                                     }
                                 }
-                            }
                             if (flaggedQuestions[i]) {
                                 updateBadgeStyles(i);
                             }
@@ -1683,7 +1698,7 @@
                 studentResponses[`Q${i}`] = userAns;
 
                 const correctAns = getCorrectAnswer(i);
-                if (userAns.toLowerCase() === correctAns.toLowerCase()) {
+                if (checkUserAnswerCorrect(userAns, correctAns)) {
                     correctAnswersCount++;
                 }
             }
@@ -1698,6 +1713,7 @@
                 band: calculatedBand,
                 answers: studentResponses,
                 highlightsHTML: document.getElementById('passage-content-container').innerHTML,
+                questionsHTML: document.getElementById('question-content-container').innerHTML,
                 flags: flaggedQuestions,
                 submittedAt: new Date().toISOString()
             };
@@ -1713,6 +1729,7 @@
                 band: calculatedBand,
                 answers: studentResponses,
                 highlightsHTML: document.getElementById('passage-content-container').innerHTML,
+                questionsHTML: document.getElementById('question-content-container').innerHTML,
                 flags: flaggedQuestions,
                 submittedAt: new Date().toISOString()
             };
@@ -1774,7 +1791,7 @@
             for (let i = 1; i <= 40; i++) {
                 const userAns = responses[`Q${i}`] || "";
                 const correctAns = getCorrectAnswer(i);
-                const isCorrect = userAns.toLowerCase() === correctAns.toLowerCase();
+                const isCorrect = checkUserAnswerCorrect(userAns, correctAns);
 
                 const row = document.createElement('tr');
                 row.innerHTML = `
@@ -1808,6 +1825,7 @@
                         band: band,
                         answers: responses,
                         highlightsHTML: document.getElementById('passage-content-container').innerHTML,
+                        questionsHTML: document.getElementById('question-content-container').innerHTML,
                         flags: flaggedQuestions,
                         submittedAt: new Date().toISOString()
                     };
@@ -1926,7 +1944,8 @@
                                 band: res.band,
                                 answers: res.answers,
                                 highlightsHTML: res.highlightsHTML,
-                                flags: res.flags,
+                                questionsHTML: res.questionsHTML || "",
+                                flags: res.flags || {},
                                 submittedAt: res.submittedAt || new Date().toISOString()
                             };
                             allSubmissions.push(submission);
