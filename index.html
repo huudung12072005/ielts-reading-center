@@ -1130,9 +1130,19 @@
         // Hàm helper kiểm tra đáp án nhập vào có khớp với đáp án đúng không (hỗ trợ dấu gạch chéo '/')
         function checkUserAnswerCorrect(userAns, correctAns) {
             if (!correctAns) return false;
-            const userAnsLower = userAns.trim().toLowerCase();
-            const correctAnsLower = correctAns.trim().toLowerCase();
             
+            const normalize = (str) => {
+                let s = str.trim().toLowerCase().replace(/\s+/g, ' ');
+                // Standardize time formatting: replace colons with dots between digits (e.g. 11:30 -> 11.30)
+                s = s.replace(/(\d):(\d)/g, '$1.$2');
+                // Remove space before am/pm (e.g. 11.30 pm -> 11.30pm)
+                s = s.replace(/(\d+)\s*(am|pm)/g, '$1$2');
+                return s.trim();
+            };
+
+            const userAnsNorm = normalize(userAns);
+            const correctAnsNorm = normalize(correctAns);
+
             const isEquiv = (a1, a2) => {
                 if (a1 === a2) return true;
                 if ((a1 === 'yes' || a1 === 'true') && (a2 === 'yes' || a2 === 'true')) return true;
@@ -1140,11 +1150,11 @@
                 return false;
             };
 
-            if (correctAnsLower.includes('/')) {
-                const parts = correctAnsLower.split('/');
-                return parts.some(p => isEquiv(userAnsLower, p.trim()));
+            if (correctAnsNorm.includes('/')) {
+                const parts = correctAnsNorm.split('/');
+                return parts.some(p => isEquiv(userAnsNorm, p.trim()));
             }
-            return isEquiv(userAnsLower, correctAnsLower);
+            return isEquiv(userAnsNorm, correctAnsNorm);
         }
 
         function calculateIeltsReadingBand(correctCount) {
