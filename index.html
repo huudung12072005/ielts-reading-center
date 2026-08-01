@@ -842,6 +842,9 @@
                     </select>
                 </div>
                 <div class="action-buttons">
+                    <button class="btn-teacher" onclick="reGradeAllSubmissionsUI()" style="background-color: #218c74; color: white;">
+                        🔄 Chấm lại điểm cũ
+                    </button>
                     <button class="btn-teacher btn-teacher-secondary" onclick="document.getElementById('teacher-import-file').click()">
                         📥 Nhập file JSON
                     </button>
@@ -2267,6 +2270,75 @@
             function handleAuthCancel() {
                 closeIeltsModal('modal-teacher-auth');
                 switchAppView('student');
+            }
+        }
+
+        async function reGradeAllSubmissionsUI() {
+            const allSubmissions = JSON.parse(localStorage.getItem('ielts_all_submissions') || '[]');
+            if (allSubmissions.length === 0) {
+                alert("Không có bài làm nào trong lịch sử để chấm lại!");
+                return;
+            }
+            
+            if (!confirm(`Bạn có muốn chấm lại điểm cho toàn bộ ${allSubmissions.length} bài làm cũ trong lịch sử theo bộ đáp án mới nhất?`)) {
+                return;
+            }
+            
+            let updatedCount = 0;
+            const keyCache = {};
+            
+            const btn = document.querySelector('button[onclick="reGradeAllSubmissionsUI()"]');
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = "⏳ Đang chấm lại...";
+            
+            try {
+                for (let sub of allSubmissions) {
+                    const cacheKey = `vol_${sub.volume}_test_${sub.test}`;
+                    let answersKey = keyCache[cacheKey];
+                    
+                    if (!answersKey) {
+                        const response = await fetch(`data/vol_${sub.volume}/test_${sub.test}.json`);
+                        if (response.ok) {
+                            const data = await response.json();
+                            answersKey = data.answers;
+                            keyCache[cacheKey] = answersKey;
+                        }
+                    }
+                    
+                    if (answersKey) {
+                        let correctCount = 0;
+                        for (let i = 1; i <= 40; i++) {
+                            const qKey = `Q${i}`;
+                            const userAns = sub.answers[qKey] || "";
+                            const correctAns = answersKey[qKey] || "";
+                            if (checkUserAnswerCorrect(userAns, correctAns)) {
+                                correctCount++;
+                            }
+                        }
+                        
+                        const newBand = calculateIeltsReadingBand(correctCount);
+                        if (sub.score !== correctCount || sub.band !== newBand) {
+                            sub.score = correctCount;
+                            sub.band = newBand;
+                            updatedCount++;
+                        }
+                    }
+                }
+                
+                if (updatedCount > 0) {
+                    localStorage.setItem('ielts_all_submissions', JSON.stringify(allSubmissions));
+                    alert(`Đã cập nhật lại điểm thành công cho ${updatedCount} bài làm!`);
+                    renderTeacherSubmissions();
+                } else {
+                    alert("Tất cả các bài làm cũ đều đã khớp với đáp án mới nhất, không cần cập nhật!");
+                }
+            } catch (err) {
+                console.error("Lỗi chấm lại bài:", err);
+                alert("Đã xảy ra lỗi khi chấm lại điểm!");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
             }
         }
 
